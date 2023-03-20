@@ -1,0 +1,103 @@
+import React, { useState } from "react";
+import logo from "./logo.svg";
+import "./App.css";
+
+function loadScript(src) {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => {
+      resolve(true);
+    };
+    script.onerror = () => {
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+}
+
+const __DEV__ = document.domain === "localhost";
+
+function App() {
+  const [name, setName] = useState("Widur");
+
+  async function displayRazorpay() {
+    const res = await loadScript(
+      "https://checkout.razorpay.com/v1/checkout.js"
+    );
+
+    if (!res) {
+      alert("Razorpay SDK failed to load. Are you online?");
+      return;
+    }
+
+    const { data } = await fetch(
+      "https://backend.hotelcom.live/api/v1/transactions/pay/online",
+
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer " +
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NjEsImF1dGhDb2RlIjoiVWtIRWIiLCJpc0FjdGl2ZSI6dHJ1ZSwic2NhbnMiOjEsImNyZWF0ZWRBdCI6IjIwMjItMTAtMjFUMTU6MzQ6NDYuNDkwWiIsInJvb21JZCI6NiwiaG90ZWxJZCI6MSwicm9sZSI6Imd1ZXN0IiwiaWF0IjoxNjY3MjI5OTc2fQ.9LxzT9klYHEQsedRCvd3YiFNy9RkIaypbWRuLQZsNd8",
+        },
+        body: JSON.stringify({
+          transactionIds: [40],
+        }),,
+      }
+    )
+      .then((t) => t.json())
+      .catch((err) => res.send(err));
+
+    console.log(data);
+
+    const options = {
+      // key: __DEV__ ? 'rzp_test_uGoq5ABJztRAhk' : 'PRODUCTION_KEY',
+      // key: "rzp_test_OX9EATEc8ErSIM",
+      key: data.RAZORPAY_KEY_ID,
+      currency: data.order.currency,
+      amount: data.order.amount,
+      order_id: data.order.id,
+      name: "Hotelcom",
+      description: "Thank you for nothing. Please give us some money",
+      // image: 'http://localhost:1337/logo.svg',
+      notes: data.order.notes,
+
+      handler: function (response) {
+        console.log("res from handler\n", response);
+        // alert(response.razorpay_payment_id);
+        // alert(response.razorpay_order_id);
+        // alert(response.razorpay_signature);
+      },
+      prefill: {
+        name: "Jay Jethava",
+        email: "jayjethva2018@gmail.com",
+        phone_number: "9924170840",
+      },
+    };
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
+  }
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <p>
+          Edit <code>src/App.js</code> and save to reload.
+        </p>
+        <a
+          className="App-link"
+          onClick={displayRazorpay}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Donate $5
+        </a>
+      </header>
+    </div>
+  );
+}
+
+export default App;

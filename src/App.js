@@ -30,6 +30,7 @@ function App() {
       alert("Razorpay SDK failed to load. Are you online?");
       return;
     }
+    const backend_url = "http://localhost:3001/api/v1/razorpay/payment/request";
 
     // <============ Collectxn ============>
     // const { data } = await fetch(
@@ -109,9 +110,7 @@ function App() {
       },
       // Pass cole and size when order a single product
       body: JSON.stringify({
-        // color: "Red",
-        // size: "24",
-        addressId: 1,
+        planId: 1,
       }),
     })
       .then((t) => t.json())
@@ -147,8 +146,6 @@ function App() {
     const paymentObject = new window.Razorpay(options);
     paymentObject.open();
   }
-
-  const backend_url = "http://localhost:3001/api/v1/razorpay/payment/request";
 
   return (
     <div className="App">
